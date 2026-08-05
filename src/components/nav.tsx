@@ -57,9 +57,9 @@ export function Nav() {
     <aside className="flex w-60 shrink-0 flex-col gap-6 bg-sidebar-bg px-3 py-5 text-sidebar-text">
       <Link href="/" className="flex items-center gap-2 px-2">
         <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-green text-sm font-bold text-white">
-          U
+          NT
         </span>
-        <span className="font-semibold">Unichaat</span>
+        <span className="font-semibold">Atendimento NT</span>
       </Link>
 
       <NavLink href="/" label="Início" icon={Home} active={pathname === "/"} />

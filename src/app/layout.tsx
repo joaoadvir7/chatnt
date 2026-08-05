@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CRM Unichaat",
-  description: "CRM de automação WhatsApp para a Escola Bíblica / Novo Tempo",
+  title: "Atendimento NT",
+  description: "Sistema de atendimento e acompanhamento de alunos da Escola Bíblica Novo Tempo",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
