@@ -12,6 +12,28 @@ datasource db {
   provider = "postgresql"
 }
 
+// Conexão oficial com o WhatsApp Business API (WABA) via Meta Cloud API
+model WhatsAppConnection {
+  id            String @id @default(cuid())
+  name          String // nome dado pelo usuário para identificar a conexão
+  phoneNumber   String @unique // número em formato E.164, ex: +5511999999999
+  wabaId        String // WhatsApp Business Account ID
+  phoneNumberId String @unique // Meta phone_number_id, usado nas chamadas de envio
+  accessToken   String // System User access token (permanente) — nunca retornar ao client
+
+  verifiedName     String? // nome verificado retornado pela Meta
+  businessVerified Boolean @default(false)
+  qualityRating    String? // HIGH, MEDIUM, LOW, UNKNOWN — reportado pela Meta
+  messagingLimit   String? // tier de mensagens/24h reportado pela Meta, ex: "1K", "100K"
+  isActive         Boolean @default(true)
+
+  lastValidatedAt DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@map("whatsapp_connections")
+}
+
 // Área/perfil de acesso do atendente (ex: Coordenador Base, Admin Master)
 model Area {
   id         String      @id @default(cuid())

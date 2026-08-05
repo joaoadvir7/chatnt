@@ -4,6 +4,7 @@ const links = [
   { href: "/contatos", label: "Contatos" },
   { href: "/tags", label: "Tags" },
   { href: "/campos-customizados", label: "Campos Customizados" },
+  { href: "/conexoes", label: "Conexões" },
 ];
 
 export function Nav() {
