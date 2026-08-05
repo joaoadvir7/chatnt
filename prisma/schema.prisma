@@ -1,0 +1,111 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Área/perfil de acesso do atendente (ex: Coordenador Base, Admin Master)
+model Area {
+  id         String      @id @default(cuid())
+  name       String      @unique
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  attendants Attendant[]
+
+  @@map("areas")
+}
+
+model Attendant {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  isOnline  Boolean  @default(false)
+  areaId    String?
+  area      Area?    @relation(fields: [areaId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("attendants")
+}
+
+model Contact {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String   @unique
+  email     String?
+  source    String? // origem da captação: TV, revista, formulário, etc.
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tags              ContactTag[]
+  customFieldValues ContactCustomFieldValue[]
+
+  @@map("contacts")
+}
+
+model Tag {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  color     String   @default("#6366F1")
+  createdAt DateTime @default(now())
+
+  contacts ContactTag[]
+
+  @@map("tags")
+}
+
+// Tabela de junção explícita para permitir auditoria de quando a tag foi aplicada
+model ContactTag {
+  contactId String
+  tagId     String
+  createdAt DateTime @default(now())
+
+  contact Contact @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  tag     Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([contactId, tagId])
+  @@map("contact_tags")
+}
+
+enum CustomFieldType {
+  TEXT
+  NUMBER
+  DATE
+  BOOLEAN
+  SELECT
+}
+
+model CustomField {
+  id        String          @id @default(cuid())
+  name      String
+  key       String          @unique // slug usado para referenciar o campo (ex: "distrito")
+  type      CustomFieldType @default(TEXT)
+  options   Json? // opções disponíveis quando type = SELECT
+  createdAt DateTime        @default(now())
+
+  values ContactCustomFieldValue[]
+
+  @@map("custom_fields")
+}
+
+model ContactCustomFieldValue {
+  id            String   @id @default(cuid())
+  contactId     String
+  customFieldId String
+  value         String
+  updatedAt     DateTime @updatedAt
+
+  contact     Contact     @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  customField CustomField @relation(fields: [customFieldId], references: [id], onDelete: Cascade)
+
+  @@unique([contactId, customFieldId])
+  @@map("contact_custom_field_values")
+}
