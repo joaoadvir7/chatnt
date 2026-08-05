@@ -31,7 +31,50 @@ model WhatsAppConnection {
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
+  conversations Conversation[]
+
   @@map("whatsapp_connections")
+}
+
+enum ConversationStatus {
+  OPEN
+  RESOLVED
+}
+
+model Conversation {
+  id           String             @id @default(cuid())
+  contactId    String
+  contact      Contact            @relation(fields: [contactId], references: [id])
+  connectionId String
+  connection   WhatsAppConnection @relation(fields: [connectionId], references: [id])
+  status       ConversationStatus @default(OPEN)
+
+  lastMessageAt DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  messages Message[]
+
+  @@unique([contactId, connectionId])
+  @@map("conversations")
+}
+
+enum MessageDirection {
+  INBOUND
+  OUTBOUND
+}
+
+model Message {
+  id             String           @id @default(cuid())
+  conversationId String
+  conversation   Conversation     @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  direction      MessageDirection
+  content        String
+  status         String? // sent, delivered, read, failed (outbound) — null para inbound
+  waMessageId    String?          @unique // id da mensagem retornado pela Meta (idempotência do webhook)
+  createdAt      DateTime         @default(now())
+
+  @@map("messages")
 }
 
 // Área/perfil de acesso do atendente (ex: Coordenador Base, Admin Master)
@@ -69,6 +112,7 @@ model Contact {
 
   tags              ContactTag[]
   customFieldValues ContactCustomFieldValue[]
+  conversations     Conversation[]
 
   @@map("contacts")
 }

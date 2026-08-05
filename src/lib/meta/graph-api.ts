@@ -32,3 +32,35 @@ export async function fetchPhoneNumberDetails(
     businessVerified: data.code_verification_status === "VERIFIED",
   };
 }
+
+export async function sendTextMessage(
+  phoneNumberId: string,
+  accessToken: string,
+  to: string,
+  body: string,
+): Promise<{ waMessageId: string }> {
+  const url = `https://graph.facebook.com/${GRAPH_API_VERSION}/${phoneNumberId}/messages`;
+
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      messaging_product: "whatsapp",
+      to,
+      type: "text",
+      text: { body },
+    }),
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    const message = data?.error?.message ?? "Erro ao enviar mensagem via WhatsApp";
+    throw new Error(message);
+  }
+
+  return { waMessageId: data.messages?.[0]?.id };
+}
