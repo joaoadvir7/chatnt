@@ -55,7 +55,7 @@ export default async function ConversaPage({ params }: PageProps<"/conversas/[id
         </div>
       </div>
 
-      <div className="flex flex-col gap-3 py-2">
+      <div className="chat-pattern-bg flex min-h-[50vh] flex-col gap-3 rounded-lg p-4">
         {conversation.messages.length === 0 && (
           <p className="py-10 text-center text-sm text-foreground/50">
             Nenhuma mensagem nessa conversa ainda.
@@ -67,10 +67,10 @@ export default async function ConversaPage({ params }: PageProps<"/conversas/[id
             className={`flex ${msg.direction === "OUTBOUND" ? "justify-end" : "justify-start"}`}
           >
             <div
-              className={`max-w-sm rounded-lg px-3 py-2 text-sm ${
+              className={`max-w-sm rounded-lg px-3 py-2 text-sm shadow-sm ${
                 msg.direction === "OUTBOUND"
-                  ? "bg-foreground text-background"
-                  : "bg-black/[.05] dark:bg-white/[.08]"
+                  ? "bg-bubble-outgoing text-bubble-outgoing-text"
+                  : "bg-white text-foreground"
               }`}
             >
               <p>{msg.content}</p>

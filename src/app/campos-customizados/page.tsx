@@ -56,7 +56,7 @@ export default async function CamposCustomizadosPage({
         </label>
         <button
           type="submit"
-          className="mt-2 w-fit rounded-md bg-foreground px-4 py-2 text-sm text-background hover:opacity-90"
+          className="mt-2 w-fit rounded-md bg-brand-green px-4 py-2 text-sm text-white hover:bg-brand-green-dark"
         >
           Criar campo
         </button>

@@ -21,8 +21,12 @@ export default async function ConversasPage() {
             <li key={conv.id}>
               <Link
                 href={`/conversas/${conv.id}`}
-                className="flex items-center justify-between gap-4 px-4 py-3 hover:bg-black/[.02] dark:hover:bg-white/[.04]"
+                className="flex items-center gap-3 px-4 py-3 hover:bg-brand-green/5"
               >
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-sidebar-bg text-sm font-semibold text-white">
+                  {conv.contact.name.slice(0, 1).toUpperCase()}
+                </span>
+                <div className="flex min-w-0 flex-1 items-center justify-between gap-4">
                 <div className="flex flex-col gap-1">
                   <div className="flex items-center gap-2">
                     <span className="font-medium">{conv.contact.name}</span>
@@ -57,6 +61,7 @@ export default async function ConversasPage() {
                       )
                     : ""}
                 </span>
+                </div>
               </Link>
             </li>
           );

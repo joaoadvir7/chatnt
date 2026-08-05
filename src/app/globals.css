@@ -3,24 +3,45 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* Paleta verde inspirada no Unnichat / WhatsApp */
+  --sidebar-bg: #0c3b30;
+  --sidebar-bg-light: #124a3c;
+  --sidebar-active: #1c6b56;
+  --sidebar-text: #d9efe7;
+  --sidebar-text-muted: #8fb8ab;
+
+  --brand-green: #128c5f;
+  --brand-green-dark: #0e6b48;
+  --bubble-outgoing: #dcf8c6;
+  --bubble-outgoing-text: #111b0f;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-sidebar-bg: var(--sidebar-bg);
+  --color-sidebar-bg-light: var(--sidebar-bg-light);
+  --color-sidebar-active: var(--sidebar-active);
+  --color-sidebar-text: var(--sidebar-text);
+  --color-sidebar-text-muted: var(--sidebar-text-muted);
+  --color-brand-green: var(--brand-green);
+  --color-brand-green-dark: var(--brand-green-dark);
+  --color-bubble-outgoing: var(--bubble-outgoing);
+  --color-bubble-outgoing-text: var(--bubble-outgoing-text);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+.chat-pattern-bg {
+  background-color: #eef4f1;
+  background-image:
+    radial-gradient(circle at 20% 20%, rgba(18, 140, 95, 0.05) 0, transparent 40%),
+    radial-gradient(circle at 80% 60%, rgba(18, 140, 95, 0.05) 0, transparent 40%);
 }

@@ -21,7 +21,7 @@ export default async function ConexoesPage() {
         <h1 className="text-2xl font-semibold">Conexões</h1>
         <Link
           href="/conexoes/nova"
-          className="rounded-md bg-foreground px-4 py-2 text-sm text-background hover:opacity-90"
+          className="rounded-md bg-brand-green px-4 py-2 text-sm text-white hover:bg-brand-green-dark"
         >
           Nova conexão
         </Link>

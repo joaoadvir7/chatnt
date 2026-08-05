@@ -79,7 +79,7 @@ export default async function NovaConexaoPage({ searchParams }: PageProps<"/cone
         <div className="flex gap-3">
           <button
             type="submit"
-            className="rounded-md bg-foreground px-4 py-2 text-sm text-background hover:opacity-90"
+            className="rounded-md bg-brand-green px-4 py-2 text-sm text-white hover:bg-brand-green-dark"
           >
             Conectar e validar
           </button>

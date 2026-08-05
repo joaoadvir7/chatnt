@@ -22,7 +22,7 @@ export function ImportContactsForm() {
         <button
           type="submit"
           disabled={isPending}
-          className="w-fit rounded-md bg-foreground px-4 py-2 text-sm text-background hover:opacity-90 disabled:opacity-50"
+          className="w-fit rounded-md bg-brand-green px-4 py-2 text-sm text-white hover:bg-brand-green-dark disabled:opacity-50"
         >
           {isPending ? "Importando..." : "Importar contatos"}
         </button>
