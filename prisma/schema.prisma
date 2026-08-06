@@ -107,6 +107,7 @@ model Contact {
   phone     String   @unique
   email     String?
   source    String? // origem da captação: TV, revista, formulário, etc.
+  optedOut  Boolean  @default(false) // true = contato pediu pra não receber mais mensagens (nó OptOut)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -223,6 +224,10 @@ enum AutomationNodeType {
   APPLY_TAG
   DELAY
   CONDITIONAL
+  HTTP_REQUEST
+  OPT_OUT
+  RANDOMIZER
+  FORWARD_AUTOMATION
 }
 
 model AutomationNode {
@@ -235,8 +240,12 @@ model AutomationNode {
   // TRIGGER: { triggerType: "KEYWORD" | "TAG_APPLIED" | "NEW_CONTACT", keyword?, tagId? }
   // SEND_MESSAGE: { message: string }
   // APPLY_TAG: { tagId: string }
-  // DELAY: { minutes: number }
-  // CONDITIONAL: { conditionType: "HAS_TAG", tagId: string }
+  // DELAY: { amount: number, unit: "MINUTES" | "HOURS" | "DAYS" }
+  // CONDITIONAL: { conditionType: "HAS_TAG", tagId: string } — saídas: sourceHandle "true" / "false"
+  // HTTP_REQUEST: { url: string, method: "GET" | "POST" }
+  // OPT_OUT: {} — marca o contato como descadastrado (Contact.optedOut)
+  // RANDOMIZER: {} — divide 50/50 — saídas: sourceHandle "a" / "b"
+  // FORWARD_AUTOMATION: { targetAutomationId: string } — continua a execução a partir do gatilho de outra automação
   config       Json?
   createdAt    DateTime           @default(now())
 

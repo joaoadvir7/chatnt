@@ -17,7 +17,18 @@ import {
   type EdgeChange,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { ArrowLeft, MessageSquare, Tag as TagIcon, Clock, GitBranch, Save } from "lucide-react";
+import {
+  ArrowLeft,
+  MessageSquare,
+  Tag as TagIcon,
+  Clock,
+  GitBranch,
+  Globe,
+  UserX,
+  Shuffle,
+  Workflow,
+  Save,
+} from "lucide-react";
 import { AutomationFlowNode, type FlowNodeData } from "@/components/automation-flow-node";
 import { AutomationNodeConfigPanel } from "@/components/automation-node-config-panel";
 import { saveAutomationGraph, renameAutomation, toggleAutomationActive } from "@/lib/actions/automations";
@@ -26,17 +37,26 @@ import type { AutomationNodeType } from "@/generated/prisma/enums";
 
 type Automation = NonNullable<Awaited<ReturnType<typeof getAutomationById>>>;
 type Tag = { id: string; name: string; color: string };
+type AutomationOption = { id: string; name: string };
 
 const nodeTypes = { flowNode: AutomationFlowNode };
 
 const PALETTE: { type: AutomationNodeType; label: string; icon: typeof MessageSquare }[] = [
   { type: "SEND_MESSAGE", label: "Enviar mensagem", icon: MessageSquare },
   { type: "APPLY_TAG", label: "Aplicar tag", icon: TagIcon },
-  { type: "DELAY", label: "Atraso", icon: Clock },
+  { type: "DELAY", label: "Atraso inteligente", icon: Clock },
   { type: "CONDITIONAL", label: "Condicional", icon: GitBranch },
+  { type: "RANDOMIZER", label: "Randomizador", icon: Shuffle },
+  { type: "HTTP_REQUEST", label: "Requisição HTTP", icon: Globe },
+  { type: "OPT_OUT", label: "OptOut", icon: UserX },
+  { type: "FORWARD_AUTOMATION", label: "Encaminhar automação", icon: Workflow },
 ];
 
-function toFlowNodes(automation: Automation, tagsById: Record<string, Tag>): Node<FlowNodeData>[] {
+function toFlowNodes(
+  automation: Automation,
+  tagsById: Record<string, Tag>,
+  automationsById: Record<string, AutomationOption>,
+): Node<FlowNodeData>[] {
   return automation.nodes.map((n) => ({
     id: n.id,
     type: "flowNode",
@@ -45,6 +65,7 @@ function toFlowNodes(automation: Automation, tagsById: Record<string, Tag>): Nod
       nodeType: n.type,
       config: (n.config as Record<string, unknown>) ?? {},
       tagsById,
+      automationsById,
       onEdit: () => {},
       onDelete: () => {},
       onDuplicate: () => {},
@@ -67,10 +88,24 @@ function newTempId() {
   return `new-${Date.now()}-${tempIdCounter}`;
 }
 
-export function AutomationEditor({ automation, tags }: { automation: Automation; tags: Tag[] }) {
+export function AutomationEditor({
+  automation,
+  tags,
+  automations,
+}: {
+  automation: Automation;
+  tags: Tag[];
+  automations: AutomationOption[];
+}) {
   const tagsById = useMemo(() => Object.fromEntries(tags.map((t) => [t.id, t])), [tags]);
+  const automationsById = useMemo(
+    () => Object.fromEntries(automations.map((a) => [a.id, a])),
+    [automations],
+  );
 
-  const [nodes, setNodes] = useState<Node<FlowNodeData>[]>(() => toFlowNodes(automation, tagsById));
+  const [nodes, setNodes] = useState<Node<FlowNodeData>[]>(() =>
+    toFlowNodes(automation, tagsById, automationsById),
+  );
   const [edges, setEdges] = useState<Edge[]>(() => toFlowEdges(automation));
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [name, setName] = useState(automation.name);
@@ -94,15 +129,26 @@ export function AutomationEditor({ automation, tags }: { automation: Automation;
 
   function addNode(type: AutomationNodeType) {
     const id = newTempId();
-    setNodes((nds) => [
-      ...nds,
-      {
-        id,
-        type: "flowNode",
-        position: { x: 120 + ((nds.length * 40) % 400), y: 260 + ((nds.length * 60) % 300) },
-        data: { nodeType: type, config: {}, tagsById, onEdit: () => {}, onDelete: () => {}, onDuplicate: () => {} },
-      },
-    ]);
+    setNodes((nds) => {
+      const maxX = nds.reduce((max, n) => Math.max(max, n.position.x), 0);
+      return [
+        ...nds,
+        {
+          id,
+          type: "flowNode",
+          position: { x: maxX + 320, y: 100 + ((nds.length * 140) % 420) },
+          data: {
+            nodeType: type,
+            config: {},
+            tagsById,
+            automationsById,
+            onEdit: () => {},
+            onDelete: () => {},
+            onDuplicate: () => {},
+          },
+        },
+      ];
+    });
   }
 
   function deleteNode(id: string) {
@@ -236,7 +282,7 @@ export function AutomationEditor({ automation, tags }: { automation: Automation;
       </div>
 
       <div className="flex flex-1 overflow-hidden">
-        <div className="flex w-52 shrink-0 flex-col gap-2 border-r border-black/10 p-3">
+        <div className="flex w-52 shrink-0 flex-col gap-2 overflow-y-auto border-r border-black/10 p-3">
           <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-foreground/50">
             Adicionar passo
           </p>
@@ -273,6 +319,7 @@ export function AutomationEditor({ automation, tags }: { automation: Automation;
             nodeType={selectedNode.data.nodeType}
             config={selectedNode.data.config}
             tags={tags}
+            automations={automations}
             onChange={(config) => updateNodeConfig(selectedNode.id, config)}
             onClose={() => setSelectedNodeId(null)}
           />

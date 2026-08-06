@@ -35,7 +35,9 @@ async function processJob(job: Job<AutomationJobData>) {
           prisma.contact.findUnique({ where: { id: contactId } }),
           prisma.whatsAppConnection.findUnique({ where: { id: connectionId } }),
         ]);
-        if (contact && connection) {
+        if (contact?.optedOut) {
+          // contato pediu pra não receber mais mensagens — pula o envio, mas segue o fluxo
+        } else if (contact && connection) {
           const { waMessageId } = await sendTextMessage(
             connection.phoneNumberId,
             connection.accessToken,
@@ -100,6 +102,31 @@ async function processJob(job: Job<AutomationJobData>) {
         );
       }
       return; // pausa aqui; a continuação roda como um novo job mais tarde
+    } else if (node.type === "HTTP_REQUEST") {
+      const url = String(config.url ?? "").trim();
+      const method = String(config.method ?? "GET").toUpperCase();
+      if (url) {
+        await fetch(url, { method }).catch(() => {
+          // endpoint externo fora do ar não deve travar o fluxo
+        });
+      }
+      currentNodeId = await getNextNodeId(node.id);
+    } else if (node.type === "OPT_OUT") {
+      await prisma.contact.update({ where: { id: contactId }, data: { optedOut: true } });
+      currentNodeId = await getNextNodeId(node.id);
+    } else if (node.type === "RANDOMIZER") {
+      const branch = Math.random() < 0.5 ? "a" : "b";
+      currentNodeId = await getNextNodeId(node.id, branch);
+    } else if (node.type === "FORWARD_AUTOMATION") {
+      const targetAutomationId = config.targetAutomationId as string | undefined;
+      if (!targetAutomationId) {
+        currentNodeId = null;
+        continue;
+      }
+      const targetTrigger = await prisma.automationNode.findFirst({
+        where: { automationId: targetAutomationId, type: "TRIGGER" },
+      });
+      currentNodeId = targetTrigger ? await getNextNodeId(targetTrigger.id) : null;
     } else {
       currentNodeId = null;
     }
