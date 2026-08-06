@@ -98,9 +98,12 @@ export function AutomationFlowNode({ id, data }: NodeProps & { data: FlowNodeDat
   const [labelA, labelB] = data.nodeType === "CONDITIONAL" ? ["Não", "Sim"] : ["A", "B"];
   const [handleA, handleB] = data.nodeType === "CONDITIONAL" ? ["false", "true"] : ["a", "b"];
 
+  const isRichMessage =
+    data.nodeType === "SEND_MESSAGE" && (data.config.mediaUrl || data.config.buttonText);
+
   return (
     <div
-      className={`w-64 rounded-lg border-2 bg-white shadow-sm ${
+      className={`${isRichMessage ? "w-72" : "w-64"} rounded-lg border-2 bg-white shadow-sm ${
         data.selected ? "border-brand-green" : "border-black/10"
       }`}
       onClick={() => data.onEdit(id)}
@@ -139,7 +142,32 @@ export function AutomationFlowNode({ id, data }: NodeProps & { data: FlowNodeDat
         )}
       </div>
 
-      <div className="px-3 py-2 text-xs text-foreground/70">{getSummary(data)}</div>
+      {isRichMessage ? (
+        <div>
+          {data.config.mediaType === "image" && data.config.mediaUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={String(data.config.mediaUrl)}
+              alt=""
+              className="h-32 w-full rounded-none border-b border-black/5 object-cover"
+            />
+          ) : data.config.mediaType && data.config.mediaUrl ? (
+            <div className="border-b border-black/5 bg-black/[.03] px-3 py-2 text-[11px] text-foreground/60">
+              📎 {String(data.config.mediaType)}: {String(data.config.mediaUrl).slice(0, 30)}...
+            </div>
+          ) : null}
+          <div className="px-3 py-2 text-xs text-foreground/70">
+            {data.config.message ? String(data.config.message).slice(0, 90) : "Configure a mensagem"}
+          </div>
+          {data.config.buttonText ? (
+            <div className="mx-3 mb-2 rounded-md border border-brand-green/40 bg-brand-green/5 px-2 py-1.5 text-center text-xs font-medium text-brand-green">
+              {String(data.config.buttonText)}
+            </div>
+          ) : null}
+        </div>
+      ) : (
+        <div className="px-3 py-2 text-xs text-foreground/70">{getSummary(data)}</div>
+      )}
 
       {branching ? (
         <div className="flex flex-col gap-2 px-3 pb-2 text-[10px] text-foreground/50">

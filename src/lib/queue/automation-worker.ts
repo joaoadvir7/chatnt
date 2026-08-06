@@ -1,6 +1,6 @@
 import { Worker, type Job } from "bullmq";
 import { prisma } from "@/lib/prisma";
-import { sendTextMessage } from "@/lib/meta/graph-api";
+import { sendRichMessage, type MediaType } from "@/lib/meta/graph-api";
 import { redisConnection } from "@/lib/queue/redis-connection";
 import { automationQueue, type AutomationJobData } from "@/lib/queue/automation-queue";
 
@@ -30,7 +30,12 @@ async function processJob(job: Job<AutomationJobData>) {
 
     if (node.type === "SEND_MESSAGE") {
       const message = String(config.message ?? "").trim();
-      if (message) {
+      const mediaUrl = String(config.mediaUrl ?? "").trim() || undefined;
+      const mediaType = (config.mediaType as MediaType | undefined) || undefined;
+      const buttonText = String(config.buttonText ?? "").trim() || undefined;
+      const buttonUrl = String(config.buttonUrl ?? "").trim() || undefined;
+
+      if (message || mediaUrl) {
         const [contact, connection] = await Promise.all([
           prisma.contact.findUnique({ where: { id: contactId } }),
           prisma.whatsAppConnection.findUnique({ where: { id: connectionId } }),
@@ -38,11 +43,11 @@ async function processJob(job: Job<AutomationJobData>) {
         if (contact?.optedOut) {
           // contato pediu pra não receber mais mensagens — pula o envio, mas segue o fluxo
         } else if (contact && connection) {
-          const { waMessageId } = await sendTextMessage(
+          const { waMessageId } = await sendRichMessage(
             connection.phoneNumberId,
             connection.accessToken,
             contact.phone.replace(/^\+/, ""),
-            message,
+            { text: message, mediaType, mediaUrl, buttonText, buttonUrl },
           );
 
           const conversation = await prisma.conversation.findUnique({
@@ -53,7 +58,7 @@ async function processJob(job: Job<AutomationJobData>) {
               data: {
                 conversationId: conversation.id,
                 direction: "OUTBOUND",
-                content: message,
+                content: message || `[${mediaType ?? "mídia"}]`,
                 status: "sent",
                 waMessageId,
               },

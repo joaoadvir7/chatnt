@@ -85,16 +85,79 @@ export function AutomationNodeConfigPanel({
         )}
 
         {nodeType === "SEND_MESSAGE" && (
-          <label className="flex flex-col gap-1 text-sm">
-            Mensagem
-            <textarea
-              rows={5}
-              value={(config.message as string) ?? ""}
-              onChange={(e) => set("message", e.target.value)}
-              placeholder="Escreva a mensagem que será enviada ao contato..."
-              className="rounded-md border border-black/10 px-2 py-1.5 text-sm"
-            />
-          </label>
+          <>
+            <label className="flex flex-col gap-1 text-sm">
+              Texto
+              <textarea
+                rows={5}
+                value={(config.message as string) ?? ""}
+                onChange={(e) => set("message", e.target.value)}
+                placeholder="Escreva a mensagem que será enviada ao contato..."
+                className="rounded-md border border-black/10 px-2 py-1.5 text-sm"
+              />
+            </label>
+
+            <div className="flex flex-col gap-1 border-t border-black/10 pt-3 text-sm">
+              <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-foreground/50">
+                Mídia (opcional)
+              </p>
+              <label className="flex flex-col gap-1">
+                Tipo
+                <select
+                  value={(config.mediaType as string) ?? ""}
+                  onChange={(e) => set("mediaType", e.target.value || undefined)}
+                  className="rounded-md border border-black/10 px-2 py-1.5 text-sm"
+                >
+                  <option value="">Nenhuma</option>
+                  <option value="image">Imagem</option>
+                  <option value="video">Vídeo</option>
+                  <option value="document">Documento</option>
+                </select>
+              </label>
+              {config.mediaType ? (
+                <label className="mt-2 flex flex-col gap-1">
+                  URL do arquivo
+                  <input
+                    type="text"
+                    value={(config.mediaUrl as string) ?? ""}
+                    onChange={(e) => set("mediaUrl", e.target.value)}
+                    placeholder="https://..."
+                    className="rounded-md border border-black/10 px-2 py-1.5 text-sm"
+                  />
+                  <p className="text-xs text-foreground/50">
+                    Um link público pro arquivo (imagem, vídeo ou documento). Upload direto ainda
+                    não é suportado.
+                  </p>
+                </label>
+              ) : null}
+            </div>
+
+            <div className="flex flex-col gap-1 border-t border-black/10 pt-3 text-sm">
+              <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-foreground/50">
+                Botão (opcional)
+              </p>
+              <label className="flex flex-col gap-1">
+                Texto do botão
+                <input
+                  type="text"
+                  value={(config.buttonText as string) ?? ""}
+                  onChange={(e) => set("buttonText", e.target.value)}
+                  placeholder="ex: Peça gratuitamente"
+                  className="rounded-md border border-black/10 px-2 py-1.5 text-sm"
+                />
+              </label>
+              <label className="mt-2 flex flex-col gap-1">
+                Link do botão
+                <input
+                  type="text"
+                  value={(config.buttonUrl as string) ?? ""}
+                  onChange={(e) => set("buttonUrl", e.target.value)}
+                  placeholder="https://..."
+                  className="rounded-md border border-black/10 px-2 py-1.5 text-sm"
+                />
+              </label>
+            </div>
+          </>
         )}
 
         {nodeType === "APPLY_TAG" && (
