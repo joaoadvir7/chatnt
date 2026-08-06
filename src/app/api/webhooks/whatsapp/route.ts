@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { triggerAutomations } from "@/lib/automations/trigger";
+import { normalizePhone } from "@/lib/phone";
 
 // Documentação do formato do payload:
 // https://developers.facebook.com/docs/whatsapp/cloud-api/webhooks/components
@@ -39,10 +40,6 @@ type WhatsAppWebhookPayload = {
   }[];
 };
 
-function toE164(phone: string) {
-  return phone.startsWith("+") ? phone : `+${phone}`;
-}
-
 function extractContent(message: InboundMessage) {
   if (message.type === "text" && message.text) return message.text.body;
   return `[mensagem do tipo ${message.type} — ainda sem suporte de exibição]`;
@@ -66,7 +63,7 @@ export async function POST(request: NextRequest) {
       if (!connection) continue;
 
       for (const message of value.messages ?? []) {
-        const phone = toE164(message.from);
+        const phone = normalizePhone(message.from);
         const profileName = value.contacts?.find((c) => c.wa_id === message.from)?.profile?.name;
 
         const existingContact = await prisma.contact.findUnique({ where: { phone } });

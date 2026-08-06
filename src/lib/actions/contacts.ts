@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import Papa from "papaparse";
 import { prisma } from "@/lib/prisma";
 import { triggerAutomations } from "@/lib/automations/trigger";
+import { normalizePhone } from "@/lib/phone";
 
 function collectCustomFieldEntries(formData: FormData) {
   const entries: { customFieldId: string; value: string }[] = [];
@@ -18,15 +19,17 @@ function collectCustomFieldEntries(formData: FormData) {
 
 export async function createContact(formData: FormData) {
   const name = String(formData.get("name") ?? "").trim();
-  const phone = String(formData.get("phone") ?? "").trim();
+  const phoneRaw = String(formData.get("phone") ?? "").trim();
   const email = String(formData.get("email") ?? "").trim();
   const source = String(formData.get("source") ?? "").trim();
   const tagIds = formData.getAll("tagIds").map(String);
   const customFields = collectCustomFieldEntries(formData);
 
-  if (!name || !phone) {
+  if (!name || !phoneRaw) {
     redirect("/contatos/novo?error=Nome e telefone são obrigatórios");
   }
+
+  const phone = normalizePhone(phoneRaw);
 
   const existing = await prisma.contact.findUnique({ where: { phone } });
   if (existing) {
@@ -58,7 +61,7 @@ export async function createContact(formData: FormData) {
 export async function updateContact(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   const name = String(formData.get("name") ?? "").trim();
-  const phone = String(formData.get("phone") ?? "").trim();
+  const phoneRaw = String(formData.get("phone") ?? "").trim();
   const email = String(formData.get("email") ?? "").trim();
   const source = String(formData.get("source") ?? "").trim();
   const tagIds = formData.getAll("tagIds").map(String);
@@ -66,9 +69,11 @@ export async function updateContact(formData: FormData) {
 
   if (!id) return;
 
-  if (!name || !phone) {
+  if (!name || !phoneRaw) {
     redirect(`/contatos/${id}?error=Nome e telefone são obrigatórios`);
   }
+
+  const phone = normalizePhone(phoneRaw);
 
   const phoneOwner = await prisma.contact.findUnique({ where: { phone } });
   if (phoneOwner && phoneOwner.id !== id) {
@@ -157,14 +162,16 @@ export async function importContactsFromCsv(
     const rowNumber = i + 2; // +1 for 0-index, +1 for header line
 
     const name = (row.nome ?? row.name ?? "").trim();
-    const phone = (row.telefone ?? row.phone ?? "").trim();
+    const phoneRaw = (row.telefone ?? row.phone ?? "").trim();
     const email = (row.email ?? "").trim();
     const tagsRaw = (row.tags ?? row.tag ?? "").trim();
 
-    if (!name || !phone) {
+    if (!name || !phoneRaw) {
       skipped.push({ row: rowNumber, reason: "Nome ou telefone ausente" });
       continue;
     }
+
+    const phone = normalizePhone(phoneRaw);
 
     const exists = await prisma.contact.findUnique({ where: { phone } });
     if (exists) {
