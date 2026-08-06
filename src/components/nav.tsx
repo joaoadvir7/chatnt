@@ -58,9 +58,8 @@ export function Nav() {
 
   return (
     <aside className="flex w-60 shrink-0 flex-col gap-6 bg-sidebar-bg px-3 py-5 text-sidebar-text">
-      <Link href="/" className="flex items-center gap-2 px-2">
-        <Image src="/chatnt-icon-white.svg" alt="ChatNT" width={32} height={32} className="h-8 w-8" />
-        <span className="font-semibold">ChatNT</span>
+      <Link href="/" className="flex items-center px-2">
+        <Image src="/chatnt-wordmark-white.svg" alt="ChatNT" width={126} height={42} className="h-9 w-auto" />
       </Link>
 
       <NavLink href="/" label="Início" icon={Home} active={pathname === "/"} />
