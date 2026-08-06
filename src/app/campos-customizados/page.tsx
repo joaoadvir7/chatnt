@@ -17,7 +17,7 @@ export default async function CamposCustomizadosPage({
   const fields = await getCustomFields();
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 rounded-xl bg-white p-8 shadow-sm">
       <h1 className="text-2xl font-semibold">Campos Customizados</h1>
 
       <form action={createCustomField} className="flex max-w-lg flex-col gap-3">

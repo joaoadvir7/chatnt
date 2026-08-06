@@ -6,7 +6,7 @@ export default async function NovoContatoPage({ searchParams }: PageProps<"/cont
   const error = typeof params.error === "string" ? params.error : undefined;
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 rounded-xl bg-white p-8 shadow-sm">
       <h1 className="text-2xl font-semibold">Novo contato</h1>
       <ContactForm action={createContact} error={error} />
     </div>

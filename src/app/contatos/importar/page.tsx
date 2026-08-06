@@ -2,7 +2,7 @@ import { ImportContactsForm } from "@/components/import-contacts-form";
 
 export default function ImportarContatosPage() {
   return (
-    <div className="flex flex-col gap-6">
+    <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 rounded-xl bg-white p-8 shadow-sm">
       <h1 className="text-2xl font-semibold">Importar contatos</h1>
       <div className="max-w-xl rounded-lg border border-black/10 p-4 text-sm text-foreground/70 dark:border-white/15">
         <p className="mb-2">O arquivo CSV deve ter uma linha de cabeçalho com estas colunas:</p>

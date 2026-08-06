@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { CircleCheck, RotateCcw, UserRound } from "lucide-react";
 import { getConversationById } from "@/lib/data/conversations";
 import { markConversationResolved, reopenConversation } from "@/lib/actions/conversations";
 import { MessageComposer } from "@/components/message-composer";
@@ -10,35 +11,39 @@ export default async function ConversaPage({ params }: PageProps<"/conversas/[id
   if (!conversation) notFound();
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between border-b border-black/10 pb-4 dark:border-white/15">
-        <div>
-          <h1 className="text-xl font-semibold">{conversation.contact.name}</h1>
-          <p className="text-sm text-foreground/60">{conversation.contact.phone}</p>
-          <div className="mt-1 flex flex-wrap gap-1">
-            {conversation.contact.tags.map(({ tag }) => (
-              <span
-                key={tag.id}
-                className="rounded-full px-2 py-0.5 text-xs text-white"
-                style={{ backgroundColor: tag.color }}
-              >
-                {tag.name}
+    <div className="flex h-full flex-col">
+      <div className="flex items-center justify-between border-b border-black/10 px-5 py-3">
+        <div className="flex items-center gap-3">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-sidebar-bg text-sm font-semibold text-white">
+            {conversation.contact.name.slice(0, 1).toUpperCase()}
+          </span>
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="font-semibold">{conversation.contact.name}</h1>
+              <span className="rounded-full border border-black/10 px-2 py-0.5 text-[11px] text-foreground/60">
+                {conversation.status === "OPEN" ? "Aberta" : "Finalizada"}
               </span>
-            ))}
+            </div>
+            <p className="text-xs text-foreground/50">{conversation.contact.phone}</p>
           </div>
         </div>
-        <div className="flex items-center gap-3">
-          <Link href={`/contatos/${conversation.contact.id}`} className="text-sm text-foreground/70 hover:underline">
-            Ver contato
+        <div className="flex items-center gap-1.5">
+          <Link
+            href={`/contatos/${conversation.contact.id}`}
+            title="Ver contato"
+            className="flex h-9 w-9 items-center justify-center rounded-full text-foreground/60 hover:bg-black/5"
+          >
+            <UserRound size={18} />
           </Link>
           {conversation.status === "OPEN" ? (
             <form action={markConversationResolved}>
               <input type="hidden" name="id" value={conversation.id} />
               <button
                 type="submit"
-                className="rounded-md border border-black/10 px-3 py-1.5 text-sm hover:bg-black/[.03] dark:border-white/15 dark:hover:bg-white/[.06]"
+                title="Marcar como resolvida"
+                className="flex h-9 w-9 items-center justify-center rounded-full text-foreground/60 hover:bg-black/5"
               >
-                Marcar como resolvida
+                <CircleCheck size={18} />
               </button>
             </form>
           ) : (
@@ -46,16 +51,31 @@ export default async function ConversaPage({ params }: PageProps<"/conversas/[id
               <input type="hidden" name="id" value={conversation.id} />
               <button
                 type="submit"
-                className="rounded-md border border-black/10 px-3 py-1.5 text-sm hover:bg-black/[.03] dark:border-white/15 dark:hover:bg-white/[.06]"
+                title="Reabrir"
+                className="flex h-9 w-9 items-center justify-center rounded-full text-foreground/60 hover:bg-black/5"
               >
-                Reabrir
+                <RotateCcw size={18} />
               </button>
             </form>
           )}
         </div>
       </div>
 
-      <div className="chat-pattern-bg flex min-h-[50vh] flex-col gap-3 rounded-lg p-4">
+      {conversation.contact.tags.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 border-b border-black/10 px-5 py-2">
+          {conversation.contact.tags.map(({ tag }) => (
+            <span
+              key={tag.id}
+              className="rounded-full px-2 py-0.5 text-xs text-white"
+              style={{ backgroundColor: tag.color }}
+            >
+              {tag.name}
+            </span>
+          ))}
+        </div>
+      )}
+
+      <div className="chat-pattern-bg flex flex-1 flex-col gap-3 overflow-y-auto p-4">
         {conversation.messages.length === 0 && (
           <p className="py-10 text-center text-sm text-foreground/50">
             Nenhuma mensagem nessa conversa ainda.
@@ -85,7 +105,9 @@ export default async function ConversaPage({ params }: PageProps<"/conversas/[id
         ))}
       </div>
 
-      <MessageComposer conversationId={conversation.id} />
+      <div className="border-t border-black/10 p-3">
+        <MessageComposer conversationId={conversation.id} />
+      </div>
     </div>
   );
 }
