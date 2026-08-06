@@ -9,10 +9,12 @@ import {
   Plug,
   Tags as TagsIcon,
   SlidersHorizontal,
+  Workflow,
 } from "lucide-react";
 
 const mainLinks = [
   { href: "/contatos", label: "Contatos", icon: Users },
+  { href: "/automacoes", label: "Automações", icon: Workflow },
   { href: "/conversas", label: "Live Chat", icon: MessageCircle },
   { href: "/conexoes", label: "Conexões", icon: Plug },
 ];

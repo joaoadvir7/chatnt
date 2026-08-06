@@ -114,6 +114,7 @@ model Contact {
   customFieldValues ContactCustomFieldValue[]
   conversations     Conversation[]
   notes             Note[]
+  automationRuns    AutomationRun[]
 
   @@map("contacts")
 }
@@ -185,4 +186,90 @@ model ContactCustomFieldValue {
 
   @@unique([contactId, customFieldId])
   @@map("contact_custom_field_values")
+}
+
+// ── Automações ──────────────────────────────────────────────
+
+model AutomationFolder {
+  id          String       @id @default(cuid())
+  name        String       @unique
+  createdAt   DateTime     @default(now())
+  automations Automation[]
+
+  @@map("automation_folders")
+}
+
+model Automation {
+  id        String            @id @default(cuid())
+  name      String
+  folderId  String?
+  folder    AutomationFolder? @relation(fields: [folderId], references: [id])
+  isActive  Boolean           @default(true)
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  nodes AutomationNode[]
+  edges AutomationEdge[]
+  runs  AutomationRun[]
+
+  @@map("automations")
+}
+
+// TRIGGER é sempre o nó de entrada (sem edges chegando nele).
+// As demais são ações executadas em sequência a partir do gatilho.
+enum AutomationNodeType {
+  TRIGGER
+  SEND_MESSAGE
+  APPLY_TAG
+  DELAY
+  CONDITIONAL
+}
+
+model AutomationNode {
+  id           String             @id @default(cuid())
+  automationId String
+  automation   Automation         @relation(fields: [automationId], references: [id], onDelete: Cascade)
+  type         AutomationNodeType
+  positionX    Float              @default(0)
+  positionY    Float              @default(0)
+  // TRIGGER: { triggerType: "KEYWORD" | "TAG_APPLIED" | "NEW_CONTACT", keyword?, tagId? }
+  // SEND_MESSAGE: { message: string }
+  // APPLY_TAG: { tagId: string }
+  // DELAY: { minutes: number }
+  // CONDITIONAL: { conditionType: "HAS_TAG", tagId: string }
+  config       Json?
+  createdAt    DateTime           @default(now())
+
+  outgoingEdges AutomationEdge[] @relation("SourceNode")
+  incomingEdges AutomationEdge[] @relation("TargetNode")
+
+  @@map("automation_nodes")
+}
+
+model AutomationEdge {
+  id           String         @id @default(cuid())
+  automationId String
+  automation   Automation     @relation(fields: [automationId], references: [id], onDelete: Cascade)
+  sourceNodeId String
+  sourceNode   AutomationNode @relation("SourceNode", fields: [sourceNodeId], references: [id], onDelete: Cascade)
+  targetNodeId String
+  targetNode   AutomationNode @relation("TargetNode", fields: [targetNodeId], references: [id], onDelete: Cascade)
+  // Para nós CONDITIONAL: "true" ou "false". Null para os demais (só uma saída).
+  sourceHandle String?
+  createdAt    DateTime       @default(now())
+
+  @@map("automation_edges")
+}
+
+model AutomationRun {
+  id           String     @id @default(cuid())
+  automationId String
+  automation   Automation @relation(fields: [automationId], references: [id], onDelete: Cascade)
+  contactId    String
+  contact      Contact    @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  status       String     @default("RUNNING") // RUNNING, COMPLETED, FAILED
+  error        String?
+  triggeredAt  DateTime   @default(now())
+
+  @@map("automation_runs")
 }
