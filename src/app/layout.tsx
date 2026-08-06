@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Atendimento NT",
-  description: "Sistema de atendimento e acompanhamento de alunos da Escola Bíblica Novo Tempo",
+  title: "ChatNT",
+  description: "Jornada de atendimento de ponta a ponta — Escola Bíblica Novo Tempo",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

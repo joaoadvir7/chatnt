@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -58,10 +59,8 @@ export function Nav() {
   return (
     <aside className="flex w-60 shrink-0 flex-col gap-6 bg-sidebar-bg px-3 py-5 text-sidebar-text">
       <Link href="/" className="flex items-center gap-2 px-2">
-        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-green text-sm font-bold text-white">
-          NT
-        </span>
-        <span className="font-semibold">Atendimento NT</span>
+        <Image src="/chatnt-icon.png" alt="ChatNT" width={32} height={32} className="h-8 w-8" />
+        <span className="font-semibold">ChatNT</span>
       </Link>
 
       <NavLink href="/" label="Início" icon={Home} active={pathname === "/"} />
