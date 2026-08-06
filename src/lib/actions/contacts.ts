@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import Papa from "papaparse";
 import { prisma } from "@/lib/prisma";
+import { triggerAutomations } from "@/lib/automations/trigger";
 
 function collectCustomFieldEntries(formData: FormData) {
   const entries: { customFieldId: string; value: string }[] = [];
@@ -45,6 +46,11 @@ export async function createContact(formData: FormData) {
     },
   });
 
+  await triggerAutomations({ type: "NEW_CONTACT", contactId: contact.id });
+  for (const tagId of tagIds) {
+    await triggerAutomations({ type: "TAG_APPLIED", contactId: contact.id, tagId });
+  }
+
   revalidatePath("/contatos");
   redirect(`/contatos/${contact.id}`);
 }
@@ -69,6 +75,10 @@ export async function updateContact(formData: FormData) {
     redirect(`/contatos/${id}?error=Já existe outro contato com esse telefone`);
   }
 
+  const previousTags = await prisma.contactTag.findMany({ where: { contactId: id } });
+  const previousTagIds = new Set(previousTags.map((t) => t.tagId));
+  const newlyAddedTagIds = tagIds.filter((tagId) => !previousTagIds.has(tagId));
+
   await prisma.$transaction(async (tx) => {
     await tx.contact.update({
       where: { id },
@@ -90,6 +100,10 @@ export async function updateContact(formData: FormData) {
       });
     }
   });
+
+  for (const tagId of newlyAddedTagIds) {
+    await triggerAutomations({ type: "TAG_APPLIED", contactId: id, tagId });
+  }
 
   revalidatePath("/contatos");
   revalidatePath(`/contatos/${id}`);
@@ -173,7 +187,7 @@ export async function importContactsFromCsv(
       tagIds.push(tag.id);
     }
 
-    await prisma.contact.create({
+    const created = await prisma.contact.create({
       data: {
         name,
         phone,
@@ -182,6 +196,11 @@ export async function importContactsFromCsv(
       },
     });
     createdCount++;
+
+    await triggerAutomations({ type: "NEW_CONTACT", contactId: created.id });
+    for (const tagId of tagIds) {
+      await triggerAutomations({ type: "TAG_APPLIED", contactId: created.id, tagId });
+    }
   }
 
   revalidatePath("/contatos");

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { triggerAutomations } from "@/lib/automations/trigger";
 
 // Documentação do formato do payload:
 // https://developers.facebook.com/docs/whatsapp/cloud-api/webhooks/components
@@ -68,11 +69,10 @@ export async function POST(request: NextRequest) {
         const phone = toE164(message.from);
         const profileName = value.contacts?.find((c) => c.wa_id === message.from)?.profile?.name;
 
-        const contact = await prisma.contact.upsert({
-          where: { phone },
-          create: { name: profileName || phone, phone },
-          update: {},
-        });
+        const existingContact = await prisma.contact.findUnique({ where: { phone } });
+        const contact =
+          existingContact ??
+          (await prisma.contact.create({ data: { name: profileName || phone, phone } }));
 
         const conversation = await prisma.conversation.upsert({
           where: { contactId_connectionId: { contactId: contact.id, connectionId: connection.id } },
@@ -80,12 +80,14 @@ export async function POST(request: NextRequest) {
           update: { status: "OPEN" },
         });
 
+        const content = extractContent(message);
+
         await prisma.message.upsert({
           where: { waMessageId: message.id },
           create: {
             conversationId: conversation.id,
             direction: "INBOUND",
-            content: extractContent(message),
+            content,
             waMessageId: message.id,
           },
           update: {},
@@ -95,6 +97,23 @@ export async function POST(request: NextRequest) {
           where: { id: conversation.id },
           data: { lastMessageAt: new Date() },
         });
+
+        if (!existingContact) {
+          await triggerAutomations({
+            type: "NEW_CONTACT",
+            contactId: contact.id,
+            connectionId: connection.id,
+          });
+        }
+
+        if (message.type === "text") {
+          await triggerAutomations({
+            type: "KEYWORD",
+            contactId: contact.id,
+            connectionId: connection.id,
+            messageText: content,
+          });
+        }
       }
 
       for (const status of value.statuses ?? []) {
