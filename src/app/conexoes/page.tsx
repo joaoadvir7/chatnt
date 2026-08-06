@@ -16,7 +16,7 @@ export default async function ConexoesPage() {
   const connections = await getConnections();
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 rounded-xl bg-white p-8 shadow-sm">
+    <div className="flex w-full flex-col gap-6 rounded-xl bg-white p-8 shadow-sm">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Conexões</h1>
         <Link

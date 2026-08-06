@@ -5,7 +5,7 @@ export default async function NovaConexaoPage({ searchParams }: PageProps<"/cone
   const error = typeof params.error === "string" ? params.error : undefined;
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 rounded-xl bg-white p-8 shadow-sm">
+    <div className="flex w-full flex-col gap-6 rounded-xl bg-white p-8 shadow-sm">
       <h1 className="text-2xl font-semibold">Nova conexão</h1>
 
       <div className="max-w-xl rounded-lg border border-black/10 p-4 text-sm text-foreground/70 dark:border-white/15">
