@@ -119,6 +119,16 @@ export async function POST(request: NextRequest) {
           .catch(() => {
             // Mensagem correspondente ainda não existe localmente — ignora.
           });
+
+        // Se essa mensagem faz parte de um broadcast, atualiza o status do destinatário também.
+        await prisma.broadcastRecipient
+          .update({
+            where: { waMessageId: status.id },
+            data: { status: status.status.toUpperCase() },
+          })
+          .catch(() => {
+            // Não é uma mensagem de broadcast — ignora.
+          });
       }
     }
   }

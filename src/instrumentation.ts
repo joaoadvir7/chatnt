@@ -6,5 +6,9 @@ export async function register() {
     const { startAutomationWorker } = await import("@/lib/queue/automation-worker");
     startAutomationWorker();
     console.log("[automations] worker iniciado");
+
+    const { startBroadcastWorker } = await import("@/lib/queue/broadcast-worker");
+    startBroadcastWorker();
+    console.log("[broadcasts] worker iniciado");
   }
 }

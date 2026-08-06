@@ -118,3 +118,64 @@ export async function sendRichMessage(
 
   return sendTextMessage(phoneNumberId, accessToken, to, text);
 }
+
+export async function sendTemplateMessage(
+  phoneNumberId: string,
+  accessToken: string,
+  to: string,
+  templateName: string,
+  templateLanguage: string,
+): Promise<{ waMessageId: string }> {
+  return postMessage(phoneNumberId, accessToken, {
+    to,
+    type: "template",
+    template: { name: templateName, language: { code: templateLanguage } },
+  });
+}
+
+export type MessageTemplate = {
+  name: string;
+  language: string;
+  category: string;
+  bodyPreview?: string;
+};
+
+/**
+ * Busca os templates de mensagem da conta (WABA), retornando só os aprovados —
+ * são os únicos que a Meta permite usar pra iniciar conversa (broadcasts).
+ */
+export async function fetchApprovedTemplates(
+  wabaId: string,
+  accessToken: string,
+): Promise<MessageTemplate[]> {
+  const url = `https://graph.facebook.com/${GRAPH_API_VERSION}/${wabaId}/message_templates?fields=name,language,category,status,components&limit=100`;
+
+  const res = await fetch(url, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+    cache: "no-store",
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    const message = data?.error?.message ?? "Erro ao buscar templates da Meta";
+    throw new Error(message);
+  }
+
+  type RawTemplate = {
+    name: string;
+    language: string;
+    category: string;
+    status: string;
+    components?: { type: string; text?: string }[];
+  };
+
+  return ((data.data ?? []) as RawTemplate[])
+    .filter((t) => t.status === "APPROVED")
+    .map((t) => ({
+      name: t.name,
+      language: t.language,
+      category: t.category,
+      bodyPreview: t.components?.find((c) => c.type === "BODY")?.text,
+    }));
+}

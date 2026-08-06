@@ -32,6 +32,7 @@ model WhatsAppConnection {
   updatedAt       DateTime  @updatedAt
 
   conversations Conversation[]
+  broadcasts    Broadcast[]
 
   @@map("whatsapp_connections")
 }
@@ -111,11 +112,12 @@ model Contact {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  tags              ContactTag[]
-  customFieldValues ContactCustomFieldValue[]
-  conversations     Conversation[]
-  notes             Note[]
-  automationRuns    AutomationRun[]
+  tags               ContactTag[]
+  customFieldValues  ContactCustomFieldValue[]
+  conversations      Conversation[]
+  notes              Note[]
+  automationRuns     AutomationRun[]
+  broadcastRecipient BroadcastRecipient[]
 
   @@map("contacts")
 }
@@ -136,7 +138,8 @@ model Tag {
   color     String   @default("#6366F1")
   createdAt DateTime @default(now())
 
-  contacts ContactTag[]
+  contacts   ContactTag[]
+  broadcasts BroadcastTag[]
 
   @@map("tags")
 }
@@ -281,4 +284,57 @@ model AutomationRun {
   triggeredAt  DateTime   @default(now())
 
   @@map("automation_runs")
+}
+
+// ── Broadcasts (disparos em massa) ─────────────────────────
+
+enum BroadcastStatus {
+  DRAFT
+  SENDING
+  COMPLETED
+}
+
+model Broadcast {
+  id               String             @id @default(cuid())
+  name             String
+  connectionId     String
+  connection       WhatsAppConnection @relation(fields: [connectionId], references: [id])
+  templateName     String // nome do template aprovado na Meta usado no envio
+  templateLanguage String // ex: "pt_BR"
+  status           BroadcastStatus    @default(DRAFT)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  sentAt           DateTime?
+
+  tags       BroadcastTag[]
+  recipients BroadcastRecipient[]
+
+  @@map("broadcasts")
+}
+
+// Segmentação do público-alvo por tag (lógica OU: contato com QUALQUER uma das tags entra)
+model BroadcastTag {
+  broadcastId String
+  tagId       String
+  broadcast   Broadcast @relation(fields: [broadcastId], references: [id], onDelete: Cascade)
+  tag         Tag       @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([broadcastId, tagId])
+  @@map("broadcast_tags")
+}
+
+model BroadcastRecipient {
+  id          String    @id @default(cuid())
+  broadcastId String
+  broadcast   Broadcast @relation(fields: [broadcastId], references: [id], onDelete: Cascade)
+  contactId   String
+  contact     Contact   @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  status      String    @default("PENDING") // PENDING, SENT, DELIVERED, READ, FAILED
+  error       String?
+  waMessageId String?   @unique
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([broadcastId, contactId])
+  @@map("broadcast_recipients")
 }
