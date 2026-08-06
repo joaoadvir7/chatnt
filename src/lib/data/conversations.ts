@@ -15,7 +15,13 @@ export async function getConversationById(id: string) {
   return prisma.conversation.findUnique({
     where: { id },
     include: {
-      contact: { include: { tags: { include: { tag: true } } } },
+      contact: {
+        include: {
+          tags: { include: { tag: true } },
+          customFieldValues: { include: { customField: true } },
+          notes: { orderBy: { createdAt: "desc" } },
+        },
+      },
       connection: { select: { id: true, name: true, phoneNumber: true } },
       messages: { orderBy: { createdAt: "asc" } },
     },

@@ -113,8 +113,19 @@ model Contact {
   tags              ContactTag[]
   customFieldValues ContactCustomFieldValue[]
   conversations     Conversation[]
+  notes             Note[]
 
   @@map("contacts")
+}
+
+model Note {
+  id        String   @id @default(cuid())
+  contactId String
+  contact   Contact  @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  content   String
+  createdAt DateTime @default(now())
+
+  @@map("notes")
 }
 
 model Tag {
