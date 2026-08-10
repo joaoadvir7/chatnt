@@ -9,7 +9,6 @@ type Deal = {
   id: string;
   title: string;
   temperature: number;
-  value: number;
   contact: {
     name: string;
     phone: string;
@@ -22,10 +21,6 @@ function heat(temperature: number) {
   if (temperature >= 70) return { icon: "🔥", label: "Quente", className: "bg-orange-50 text-orange-700" };
   if (temperature <= 30) return { icon: "❄️", label: "Frio", className: "bg-sky-50 text-sky-700" };
   return { icon: "🌡️", label: "Morno", className: "bg-amber-50 text-amber-700" };
-}
-
-function money(value: number) {
-  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
 }
 
 export function CrmKanbanBoard({ pipelineId, initialStages, contacts }: { pipelineId: string; initialStages: Stage[]; contacts: Contact[] }) {
@@ -74,7 +69,6 @@ export function CrmKanbanBoard({ pipelineId, initialStages, contacts }: { pipeli
     <div className="overflow-x-auto pb-5">
       <div className="flex min-w-max items-start gap-5">
         {stages.map((stage) => {
-          const total = stage.deals.reduce((sum, deal) => sum + deal.value, 0);
           const isDropTarget = dropStageId === stage.id && draggedDealId;
           return (
             <section
@@ -88,7 +82,7 @@ export function CrmKanbanBoard({ pipelineId, initialStages, contacts }: { pipeli
               <div className="mb-3 flex items-start justify-between gap-3 rounded-xl bg-white px-3 py-3 shadow-sm">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2"><span className="h-3 w-3 shrink-0 rounded-sm" style={{ backgroundColor: stage.color }} /><h2 className="truncate font-semibold text-foreground">{stage.name}</h2></div>
-                  <p className="mt-1 text-xs font-medium text-foreground/55">{money(total)}</p>
+                  <p className="mt-1 text-xs font-medium text-foreground/55">Acompanhamento de alunos</p>
                 </div>
                 <span className="rounded-full bg-brand-green px-2 py-0.5 text-xs font-bold text-white">{stage.deals.length}</span>
               </div>
@@ -112,7 +106,7 @@ export function CrmKanbanBoard({ pipelineId, initialStages, contacts }: { pipeli
                       </div>
                       <p className="mt-3 text-sm text-foreground/75">{deal.title}</p>
                       {deal.contact.tags.length > 0 ? <div className="mt-3 flex flex-wrap gap-1">{deal.contact.tags.slice(0, 3).map((tag) => <span key={tag.id} className="max-w-32 truncate rounded-full px-2 py-0.5 text-[11px] font-medium" style={{ backgroundColor: `${tag.color}1f`, color: tag.color }}>{tag.name}</span>)}</div> : null}
-                      <div className="mt-3 flex items-center justify-between border-t border-black/5 pt-3"><span className={`rounded-md px-2 py-1 text-xs font-semibold ${temperature.className}`}>{temperature.icon} {deal.temperature}°</span><strong className="text-sm text-foreground/75">{money(deal.value)}</strong></div>
+                      <div className="mt-3 border-t border-black/5 pt-3"><span className={`rounded-md px-2 py-1 text-xs font-semibold ${temperature.className}`}>{temperature.icon} {deal.temperature}°</span></div>
                     </article>
                   );
                 })}
@@ -121,7 +115,7 @@ export function CrmKanbanBoard({ pipelineId, initialStages, contacts }: { pipeli
                   <input type="hidden" name="pipelineId" value={pipelineId} /><input type="hidden" name="stageId" value={stage.id} />
                   <select name="contactId" required defaultValue="" className="mb-2 w-full rounded-lg border border-black/10 bg-white px-2 py-2 text-xs"><option value="" disabled>Escolher aluno…</option>{contacts.map((contact) => <option key={contact.id} value={contact.id}>{contact.name} — {contact.phone}</option>)}</select>
                   <input name="title" required placeholder="Ex.: Visita à igreja" className="mb-2 w-full rounded-lg border border-black/10 bg-white px-2 py-2 text-xs" />
-                  <div className="flex gap-2"><input name="temperature" aria-label="Temperatura" type="number" min="0" max="100" defaultValue="50" className="w-16 rounded-lg border border-black/10 bg-white px-2 py-2 text-xs" /><input name="value" aria-label="Valor" type="number" min="0" step="0.01" defaultValue="0" className="min-w-0 flex-1 rounded-lg border border-black/10 bg-white px-2 py-2 text-xs" /></div>
+                  <input name="temperature" aria-label="Temperatura" type="number" min="0" max="100" defaultValue="50" className="w-full rounded-lg border border-black/10 bg-white px-2 py-2 text-xs" />
                   <button className="mt-2 w-full rounded-lg bg-brand-green px-2 py-2 text-xs font-semibold text-white hover:bg-brand-green-dark">+ Adicionar aluno</button>
                 </form>
               </div>

@@ -39,8 +39,6 @@ export async function createDeal(formData: FormData) {
   const contactId = String(formData.get("contactId") ?? "");
   const title = String(formData.get("title") ?? "").trim();
   const temperature = Math.min(100, Math.max(0, Number(formData.get("temperature") ?? 50)));
-  const rawValue = String(formData.get("value") ?? "0").replace(",", ".");
-  const value = Number(rawValue);
 
   if (!pipelineId || !stageId || !contactId || !title) return;
 
@@ -54,7 +52,7 @@ export async function createDeal(formData: FormData) {
       contactId,
       title,
       temperature: Number.isFinite(temperature) ? temperature : 50,
-      value: Number.isFinite(value) ? value : 0,
+      value: 0,
     },
   });
   revalidatePath("/crm");
