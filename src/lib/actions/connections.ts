@@ -74,6 +74,38 @@ export async function refreshConnection(formData: FormData) {
   revalidatePath("/conexoes");
 }
 
+export async function updateConnectionToken(formData: FormData) {
+  const id = String(formData.get("id") ?? "");
+  const accessToken = String(formData.get("accessToken") ?? "").trim();
+
+  if (!id || !accessToken) {
+    redirect(`/conexoes/${id}/token?error=Informe o token de acesso`);
+  }
+
+  const connection = await prisma.whatsAppConnection.findUnique({ where: { id } });
+  if (!connection) redirect("/conexoes");
+
+  try {
+    const details = await fetchPhoneNumberDetails(connection.phoneNumberId, accessToken);
+    await prisma.whatsAppConnection.update({
+      where: { id },
+      data: {
+        accessToken,
+        verifiedName: details.verifiedName,
+        businessVerified: details.businessVerified,
+        qualityRating: details.qualityRating,
+        lastValidatedAt: new Date(),
+      },
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Não foi possível validar o token";
+    redirect(`/conexoes/${id}/token?error=${encodeURIComponent(message)}`);
+  }
+
+  revalidatePath("/conexoes");
+  redirect("/conexoes?token=atualizado");
+}
+
 export async function deleteConnection(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   if (!id) return;

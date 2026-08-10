@@ -91,6 +91,9 @@ export default async function ConexoesPage() {
                     Revalidar
                   </button>
                 </form>
+                <Link href={`/conexoes/${c.id}/token`} className="text-foreground/70 hover:underline">
+                  Atualizar token
+                </Link>
                 <form action={toggleConnectionActive}>
                   <input type="hidden" name="id" value={c.id} />
                   <input type="hidden" name="isActive" value={String(c.isActive)} />
