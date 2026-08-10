@@ -96,6 +96,7 @@ model Attendant {
   isOnline  Boolean  @default(false)
   areaId    String?
   area      Area?    @relation(fields: [areaId], references: [id])
+  deals     Deal[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -118,8 +119,60 @@ model Contact {
   notes              Note[]
   automationRuns     AutomationRun[]
   broadcastRecipient BroadcastRecipient[]
+  deals              Deal[]
 
   @@map("contacts")
+}
+
+// ── CRM / Pipeline ─────────────────────────────────────────
+
+model Pipeline {
+  id          String          @id @default(cuid())
+  name        String
+  description String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  stages PipelineStage[]
+  deals  Deal[]
+
+  @@map("pipelines")
+}
+
+model PipelineStage {
+  id         String   @id @default(cuid())
+  pipelineId String
+  pipeline   Pipeline @relation(fields: [pipelineId], references: [id], onDelete: Cascade)
+  name       String
+  position   Int
+  color      String   @default("#198754")
+  createdAt  DateTime @default(now())
+
+  deals Deal[]
+
+  @@unique([pipelineId, position])
+  @@map("pipeline_stages")
+}
+
+model Deal {
+  id          String        @id @default(cuid())
+  title       String
+  contactId   String
+  contact     Contact       @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  pipelineId  String
+  pipeline    Pipeline      @relation(fields: [pipelineId], references: [id], onDelete: Cascade)
+  stageId     String
+  stage       PipelineStage @relation(fields: [stageId], references: [id], onDelete: Cascade)
+  attendantId String?
+  attendant   Attendant?    @relation(fields: [attendantId], references: [id], onDelete: SetNull)
+  value       Decimal       @default(0) @db.Decimal(12, 2)
+  temperature Int           @default(50) // 0 = frio, 100 = quente
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([pipelineId, stageId])
+  @@index([contactId])
+  @@map("deals")
 }
 
 model Note {

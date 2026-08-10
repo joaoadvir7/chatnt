@@ -12,12 +12,14 @@ import {
   SlidersHorizontal,
   Workflow,
   Send,
+  Columns3,
 } from "lucide-react";
 
 const mainLinks = [
   { href: "/contatos", label: "Contatos", icon: Users },
   { href: "/automacoes", label: "Automações", icon: Workflow },
   { href: "/broadcasts", label: "Broadcasts", icon: Send },
+  { href: "/crm", label: "CRM", icon: Columns3 },
   { href: "/conversas", label: "Live Chat", icon: MessageCircle },
   { href: "/conexoes", label: "Conexões", icon: Plug },
 ];
